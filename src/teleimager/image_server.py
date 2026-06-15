@@ -25,6 +25,7 @@ import time
 import threading
 import signal
 import functools
+import re
 import subprocess
 import platform
 from .image_client import TripleRingBuffer, ZMQ_PublisherManager, ZMQ_Responser
@@ -368,7 +369,7 @@ class WebRTC_PublisherThread(threading.Thread):
         offer_sdp = params["sdp"]
         if is_firefox and ".local" in offer_sdp:
             # Keep ICE open when aioice cannot resolve Firefox mDNS candidates.
-            offer_sdp = offer_sdp.replace("a=end-of-candidates\r\n", "")
+            offer_sdp = re.sub(r"a=end-of-candidates\s*\r?\n", "", offer_sdp)
         offer = RTCSessionDescription(sdp=offer_sdp, type=params["type"])
 
         pc = RTCPeerConnection()
