@@ -26,7 +26,6 @@ Currently, **Tele Imager** is used in the [xr_teleoperate](https://github.com/un
 - 📸 Supports multiple UVC, OpenCV, and Intel RealSense cameras
 - 📢 Publishes video frames using **ZeroMQ PUB-SUB**
 - 📢 Publishes video frames using **WebRTC**
-- 🚧 (TODO) Local shared memory mode for ultra-low latency frame access
 - 💬 Responds to image configuration commands via **ZeroMQ REQ-REP**
 - 🆔 Multiple camera identifiers: physical path, serial number, or video device path
 - ⚙️ Configurable resolution and frame rate

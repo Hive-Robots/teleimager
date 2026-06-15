@@ -27,7 +27,6 @@
 - 📸 支持多路 UVC、OpenCV 和 Intel RealSense 摄像头
 - 📢 使用 **ZeroMQ PUB-SUB** 方式发布视频帧
 - 📢 使用 **WebRTC** 方式发布视频帧
-- 🚧（TODO）本地共享内存模式，用于极低延迟访问帧数据
 - 💬 通过 **ZeroMQ REQ-REP** 方式响应图像配置指令
 - 🆔 多种摄像头识别方式：物理路径、序列号、video 设备路径
 - ⚙️ 可配置分辨率和帧率
