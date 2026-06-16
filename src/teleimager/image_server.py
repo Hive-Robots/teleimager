@@ -202,8 +202,9 @@ INDEX_HTML = """
 
 CLIENT_JS = """
 var pc = null;
+var _fallback = false;
 
-function negotiate() {
+function negotiate(codec) {
     pc.addTransceiver('video', { direction: 'recvonly' });
     return pc.createOffer().then((offer) => {
         return pc.setLocalDescription(offer);
@@ -227,6 +228,7 @@ function negotiate() {
             body: JSON.stringify({
                 sdp: offer.sdp,
                 type: offer.type,
+                codec: codec || null
             }),
             headers: {
                 'Content-Type': 'application/json'
@@ -247,20 +249,30 @@ function start() {
         sdpSemantics: 'unified-plan'
     };
 
-    // Removed STUN server check logic completely
-
     pc = new RTCPeerConnection(config);
 
     pc.addEventListener('track', (evt) => {
         if (evt.track.kind == 'video') {
-            document.getElementById('video').srcObject = evt.streams[0];
+            var v = document.getElementById('video');
+            v.srcObject = evt.streams[0];
+            // H.264 -> VP8 fallback: if no frames in 5s, reconnect with VP8
+            if (!_fallback) {
+                var t0 = v.currentTime;
+                setTimeout(function() {
+                    if (v.currentTime === t0 && !_fallback) {
+                        stop();
+                        _fallback = true;
+                        start();
+                    }
+                }, 5000);
+            }
         } else {
             document.getElementById('audio').srcObject = evt.streams[0];
         }
     });
 
     document.getElementById('start').style.display = 'none';
-    negotiate();
+    negotiate(_fallback ? 'vp8' : null);
     document.getElementById('stop').style.display = 'inline-block';
 }
 
@@ -271,6 +283,7 @@ function stop() {
         pc.close();
         pc = null;
     }
+    _fallback = false;
 }
 """
 
@@ -401,10 +414,8 @@ class WebRTC_PublisherThread(threading.Thread):
                 relayed_track = self._relay.subscribe(self._bgr_track)
                 transceiver = pc.addTransceiver(relayed_track, direction="sendonly")
                 capabilities = RTCRtpSender.getCapabilities("video")
-                pref = (self._codec_pref or "h264").lower()
-                if is_firefox and pref == "h264":
-                    pref = "vp8"
-                    logger_mp.info(f"[WebRTC] Firefox detected, prefer VP8 for port:{self._port}")
+                client_codec = params.get("codec")
+                pref = (client_codec or self._codec_pref or "h264").lower()
 
                 if pref == "h264":
                     h264_codecs = [c for c in capabilities.codecs if c.mimeType == "video/H264"]
