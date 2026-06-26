@@ -779,14 +779,14 @@ class HeadImageClient:
             # subscriber setup
             self._subscriber_manager = ZMQ_SubscriberManager.get_instance()
             
-            if self._cam_config['head_camera']['enable_zmq']:
+            if 'head_camera' in self._cam_config and self._cam_config['head_camera']['enable_zmq']:
                 self._subscriber_manager.subscribe(self._host, self._cam_config['head_camera']['zmq_port'], request_bgr=self._request_bgr)
         except Exception:
             if self._subscriber_manager is not None:
                 self._subscriber_manager.close()
             raise
 
-        if not self._cam_config['head_camera']['enable_zmq'] and not self._cam_config['head_camera']['enable_webrtc']:
+        if 'head_camera' in self._cam_config and not self._cam_config['head_camera']['enable_zmq'] and not self._cam_config['head_camera']['enable_webrtc']:
             logger_mp.warning("[Image Client] NOTICE! Head camera is not enabled on both ZMQ and WebRTC.")
 
     # --------------------------------------------------------
@@ -820,14 +820,14 @@ class LeftWristImageClient:
             # subscriber setup
             self._subscriber_manager = ZMQ_SubscriberManager.get_instance()
 
-            if self._cam_config['left_wrist_camera']['enable_zmq']:
+            if 'left_wrist_camera' in self._cam_config and self._cam_config['left_wrist_camera']['enable_zmq']:
                 self._subscriber_manager.subscribe(self._host, self._cam_config['left_wrist_camera']['zmq_port'], request_bgr=self._request_bgr)
         except Exception:
             if self._subscriber_manager is not None:
                 self._subscriber_manager.close()
             raise
 
-        if not self._cam_config['left_wrist_camera']['enable_zmq'] and not self._cam_config['left_wrist_camera']['enable_webrtc']:
+        if 'left_wrist_camera' in self._cam_config and not self._cam_config['left_wrist_camera']['enable_zmq'] and not self._cam_config['left_wrist_camera']['enable_webrtc']:
             logger_mp.warning("NOTICE! left wrist camera is not enabled on both ZMQ and WebRTC.")
 
     # --------------------------------------------------------
@@ -861,14 +861,14 @@ class RightWristImageClient:
             # subscriber setup
             self._subscriber_manager = ZMQ_SubscriberManager.get_instance()
 
-            if self._cam_config['right_wrist_camera']['enable_zmq']:
+            if 'right_wrist_camera' in self._cam_config and self._cam_config['right_wrist_camera']['enable_zmq']:
                 self._subscriber_manager.subscribe(self._host, self._cam_config['right_wrist_camera']['zmq_port'], request_bgr=self._request_bgr)
         except Exception:
             if self._subscriber_manager is not None:
                 self._subscriber_manager.close()
             raise
 
-        if not self._cam_config['right_wrist_camera']['enable_zmq'] and not self._cam_config['right_wrist_camera']['enable_webrtc']:
+        if 'right_wrist_camera' in self._cam_config and not self._cam_config['right_wrist_camera']['enable_zmq'] and not self._cam_config['right_wrist_camera']['enable_webrtc']:
             logger_mp.warning("NOTICE! right wrist camera camera is not enabled on both ZMQ and WebRTC.")
 
     # --------------------------------------------------------
@@ -915,10 +915,10 @@ class ImageClient:
             if self._cam_config['head_camera']['enable_zmq']:
                 self._subscriber_manager.subscribe(self._host, self._cam_config['head_camera']['zmq_port'], request_bgr=self._request_bgr)
 
-            if self._cam_config['left_wrist_camera']['enable_zmq']:
+            if 'left_wrist_camera' in self._cam_config and self._cam_config['left_wrist_camera']['enable_zmq']:
                 self._subscriber_manager.subscribe(self._host, self._cam_config['left_wrist_camera']['zmq_port'], request_bgr=self._request_bgr)
 
-            if self._cam_config['right_wrist_camera']['enable_zmq']:
+            if 'right_wrist_camera' in self._cam_config and self._cam_config['right_wrist_camera']['enable_zmq']:
                 self._subscriber_manager.subscribe(self._host, self._cam_config['right_wrist_camera']['zmq_port'], request_bgr=self._request_bgr)
         except Exception:
             if self._requester is not None:
@@ -927,7 +927,7 @@ class ImageClient:
                 self._subscriber_manager.close()
             raise
 
-        if not self._cam_config['head_camera']['enable_zmq'] and not self._cam_config['head_camera']['enable_webrtc']:
+        if 'head_camera' in self._cam_config and not self._cam_config['head_camera']['enable_zmq'] and not self._cam_config['head_camera']['enable_webrtc']:
             logger_mp.warning("[Image Client] NOTICE! Head camera is not enabled on both ZMQ and WebRTC.")
 
     # --------------------------------------------------------
@@ -974,14 +974,14 @@ def main():
                 logger_mp.debug(f"Head Camera Binocular: {cam_config['head_camera']['binocular']}")
                 cv2.imshow("Head Camera", head_img.bgr)
 
-        if cam_config['left_wrist_camera']['enable_zmq']:
+        if  'left_wrist_camera' in cam_config and cam_config['left_wrist_camera']['enable_zmq']:
             left_wrist_img = client.get_left_wrist_frame()
             if left_wrist_img.bgr is not None:
                 logger_mp.info(f"Left Wrist Camera FPS: {left_wrist_img.fps:.2f}")
                 logger_mp.debug(f"Left Wrist Camera Shape: {cam_config['left_wrist_camera']['image_shape']}")
                 cv2.imshow("Left Wrist Camera", left_wrist_img.bgr)
 
-        if cam_config['right_wrist_camera']['enable_zmq']:
+        if 'right_wrist_camera' in cam_config and cam_config['right_wrist_camera']['enable_zmq']:
             right_wrist_img = client.get_right_wrist_frame()
             if right_wrist_img.bgr is not None:
                 logger_mp.info(f"Right Wrist Camera FPS: {right_wrist_img.fps:.2f}")
