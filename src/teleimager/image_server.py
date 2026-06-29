@@ -16,6 +16,7 @@ logging_mp.basicConfig(level=logging_mp.INFO)
 logger_mp = logging_mp.getLogger(__name__)
 import os
 import argparse
+import contextlib
 import glob
 import cv2
 import numpy as np
@@ -1249,6 +1250,70 @@ class IsaacSimCamera(BaseCamera):
             self.multi_image_reader.close()
         self.multi_image_reader = None
         logger_mp.info(f"[IsaacSimCamera] Released {self._cam_topic}")
+
+class OAKCamera(BaseCamera):
+    def __init__(self, cam_topic, img_shape, fps, mxid=None,
+                 enable_zmq=True, zmq_port=55555, enable_webrtc=False, webrtc_port=66666, webrtc_codec=None):
+        super().__init__(cam_topic, img_shape, fps, enable_zmq, zmq_port, enable_webrtc, webrtc_port, webrtc_codec)
+        self._mxid = mxid
+        self._stack = contextlib.ExitStack()
+        dai = self._check_depthai_install()
+        try:
+            self._init_device(dai)
+            logger_mp.info(str(self))
+        except Exception as e:
+            self._stack.close()
+            raise RuntimeError(f"[OAKCamera] Failed to initialize {cam_topic}: {e}") from e
+
+    def __str__(self):
+        return (
+            f"[OAKCamera: {self._cam_topic}] initialized with "
+            f"{self._img_shape[0]}x{self._img_shape[1]} @ {self._fps} FPS, mxid={self._mxid}.\n"
+            f"ZMQ: {'enabled, zmq port=' + str(self._zmq_port) if self._enable_zmq else 'disabled'}; "
+            f"WebRTC: {'enabled, webrtc port=' + str(self._webrtc_port) if self._enable_webrtc else 'disabled'}"
+        )
+
+    def _check_depthai_install(self):
+        try:
+            import depthai as dai
+            return dai
+        except ImportError as e:
+            raise ImportError(
+                "depthai not installed. Install it with: pip install depthai"
+            ) from e
+
+    def _init_device(self, dai):
+        p = self._stack.enter_context(dai.Pipeline())
+        cam = p.create(dai.node.Camera).build()
+        preview = cam.requestOutput(
+            (self._img_shape[1], self._img_shape[0]),
+            dai.ImgFrame.Type.BGR888p,
+            fps=self._fps,
+        )
+        self._queue = preview.createOutputQueue(maxSize=4, blocking=False)
+        p.start()
+
+    def _update_frame(self):
+        in_rgb = self._queue.get()
+        if in_rgb is None:
+            return
+        bgr_numpy = cv2.flip(in_rgb.getCvFrame(), -1)
+
+        if self._enable_webrtc:
+            self._webrtc_buffer.write(bgr_numpy)
+
+        if self._enable_zmq:
+            ok, buf = cv2.imencode(".jpg", bgr_numpy)
+            if ok:
+                self._zmq_buffer.write(buf.tobytes())
+
+        if not self._ready.is_set():
+            self._ready.set()
+
+    def release(self):
+        self._stack.close()
+        logger_mp.info(f"[OAKCamera] Released {self._cam_topic}")
+
 # ========================================================
 # image server
 # ========================================================
@@ -1353,6 +1418,12 @@ class ImageServer:
                         # once you specify either `physical_path` or `serial_number`, the system will no longer fall back to searching by `video_id`.
                         # ——— even if no camera matches the given path/serial.
                         continue
+                elif cam_type == "oak":
+                    self._cameras[cam_topic] = OAKCamera(cam_topic, img_shape, fps, mxid=serial_number,
+                                                         enable_zmq=enable_zmq, zmq_port=zmq_port,
+                                                         enable_webrtc=enable_webrtc, webrtc_port=webrtc_port,
+                                                         webrtc_codec=webrtc_codec)
+
                 elif cam_type == "isaacsim":
                     # Check if binocular mode is enabled
                     binocular = cam_cfg.get("binocular", False)
