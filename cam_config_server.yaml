@@ -19,7 +19,7 @@ head_camera:
 
   # if enable_zmq and enable_webrtc are both false, the camera will not start
   # Set to true to enable ZMQ publishing, false to disable
-  enable_zmq: true
+  enable_zmq: false
   # Port to publish camera stream, e.g. zmq tcp://*:55555.  image_client.py should connect to the same port
   zmq_port : 55555
   # Set to true to enable WebRTC publishing, false to disable
@@ -33,12 +33,13 @@ head_camera:
   #   - "opencv"    → opencv driver
   #   - "realsense" → pyrealsense2 driver
   #   - "uvc"       → pyuvc driver
-  type: uvc
+  #   - "oak"       → DepthAI / Luxonis OAK driver
+  type: realsense
 
   # Image Format
   # image resolution: [height, width]
-  image_shape: [480, 1280]
-  binocular: true
+  image_shape: [720, 1280]
+  binocular: false
   # frame per second
   fps: 30
 
@@ -55,15 +56,16 @@ head_camera:
   #   - type "realsense": supports serial_number only (but a RealSense can also be used as opencv/uvc if desired)
   #   - type "opencv":    supports video_id, serial_number, physical_path
   #   - type "uvc":       supports video_id, serial_number, physical_path
-  video_id: 0
-  serial_number: 01.00.00
+  #   - type "oak":       serial_number = OAK device MxID (or null to auto-select first available device)
+  video_id: null
+  serial_number: 233622072924
   physical_path: null
 
 # =====================================================
 # Left wrist camera configuration
 # =====================================================
 left_wrist_camera:
-  enable_zmq: true
+  enable_zmq: false
   zmq_port : 55556
   enable_webrtc: true
   webrtc_port : 60002
@@ -72,15 +74,15 @@ left_wrist_camera:
   image_shape: [480, 640]
   binocular: false
   fps: 30
-  video_id: 2
-  serial_number: 200901010001
+  video_id: 6
+  serial_number: null
   physical_path: null
 
 # =====================================================
 # Right wrist camera configuration
 # =====================================================
 right_wrist_camera:
-  enable_zmq: true
+  enable_zmq: false
   zmq_port : 55557
   enable_webrtc: true
   webrtc_port: 60003
@@ -89,6 +91,17 @@ right_wrist_camera:
   image_shape: [480, 640]
   binocular: false
   fps: 30
-  video_id: 4
-  serial_number: 200901010002
+  video_id: 8
+  serial_number: null
   physical_path: null
+
+top_oak_camera:
+  enable_zmq: false
+  zmq_port: 55558
+  enable_webrtc: true
+  webrtc_port: 60004
+  webrtc_codec: h264
+  type: oak
+  image_shape: [480, 640]
+  fps: 30
+  serial_number: null   # or e.g. "18443010B1F7E61300" for a specific device
