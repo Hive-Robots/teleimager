@@ -74,9 +74,9 @@ left_wrist_camera:
   image_shape: [480, 640]
   binocular: false
   fps: 30
-  video_id: 6
+  video_id: null
   serial_number: null
-  physical_path: null
+  physical_path: /sys/devices/platform/3610000.xhci/usb2/2-2/2-2.2/2-2.2.4/2-2.2.4.1/2-2.2.4.1:1.0
 
 # =====================================================
 # Right wrist camera configuration
@@ -91,9 +91,9 @@ right_wrist_camera:
   image_shape: [480, 640]
   binocular: false
   fps: 30
-  video_id: 8
+  video_id: null
   serial_number: null
-  physical_path: null
+  physical_path: /sys/devices/platform/3610000.xhci/usb2/2-2/2-2.2/2-2.2.4/2-2.2.4.3/2-2.2.4.3:1.0
 
 top_oak_camera:
   enable_zmq: false
