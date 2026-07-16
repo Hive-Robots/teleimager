@@ -433,7 +433,7 @@ class WebRTC_PublisherThread(threading.Thread):
         # This ensures encoding happens only once globally
         if self._bgr_track and self._relay:
             try:
-                relayed_track = self._relay.subscribe(self._bgr_track)
+                relayed_track = self._relay.subscribe(self._bgr_track, buffered=False)
                 transceiver = pc.addTransceiver(relayed_track, direction="sendonly")
                 capabilities = RTCRtpSender.getCapabilities("video")
                 client_codec = params.get("codec")
