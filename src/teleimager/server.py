@@ -12,7 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging_mp
-logging_mp.basicConfig(level=logging_mp.INFO)
+try:
+    # logging_mp only lets the first caller configure it; something importing
+    # this as a library may have already called getLogger() first, so tolerate
+    # losing that race instead of crashing the importer.
+    logging_mp.basicConfig(level=logging_mp.INFO)
+except RuntimeError:
+    pass
 logger_mp = logging_mp.getLogger(__name__)
 import os
 import sys
